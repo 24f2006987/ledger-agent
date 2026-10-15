@@ -248,18 +248,18 @@ def answer_question(question, ledger):
             .astimezone(IST).date().isoformat() == target_date
         ]
 
-    # Order-count questions.
-    if any(
-        word in q
-        for word in (
-            "how many",
-            "count",
-            "number of orders",
-            "quantity of orders",
-        )
+    # Count distinct customers, not orders.
+    if (
+        "customer" in q
+        and any(word in q for word in ("how many", "count", "number of"))
     ):
-        return {"answer": len(paid)}
-
+        return {
+            "answer": len({
+                o.get("customer")
+                for o in paid
+                if o.get("customer")
+            })
+        }
     # Total revenue in USD.
     total = sum(
         (usd_amount(o, rates) for o in paid),
