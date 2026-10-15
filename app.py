@@ -213,11 +213,35 @@ def answer_question(question, ledger):
         ]
 
     # Filter by date using Asia/Kolkata business dates.
+    month_names = {
+        "january": 1, "february": 2, "march": 3,
+        "april": 4, "may": 5, "june": 6,
+        "july": 7, "august": 8, "september": 9,
+        "october": 10, "november": 11, "december": 12,
+    }
+
+    month_match = re.search(
+        r"\b(january|february|march|april|may|june|july|"
+        r"august|september|october|november|december)"
+        r"\s+(20\d{2})\b",
+        q,
+    )
+
     date_match = re.search(r"\b(20\d{2}-\d{2}-\d{2})\b", q)
 
-    if date_match:
-        target_date = date_match.group(1)
+    if month_match:
+        month = month_names[month_match.group(1)]
+        year = int(month_match.group(2))
 
+        paid = [
+            o for o in paid
+            if (
+                parse_datetime(o["created_at"]).astimezone(IST).year == year
+                and parse_datetime(o["created_at"]).astimezone(IST).month == month
+            )
+        ]
+    elif date_match:
+        target_date = date_match.group(1)
         paid = [
             o for o in paid
             if parse_datetime(o["created_at"])
